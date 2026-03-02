@@ -15,7 +15,7 @@ public class QueueConsumer {
 
     @PostConstruct
     public void start() {
-        System.out.print("[ >>> queue consumer started <<< ]");
+        System.out.print("[ >>> Queue consumer started <<< ]\n");
         new Thread(() -> {
             while (true) {
                 try {
@@ -34,15 +34,16 @@ public class QueueConsumer {
     private void handle(Message msg) {
         try {
             process(msg);
-            System.out.print("[ >>> ACK: " + msg.id() + " <<< ]");
+            brokerQueue.ack(msg.id());
+            System.out.print("[ >>> ACK: " + msg.id() + " <<< ]\n");
         } catch (Exception e) {
-            System.out.print("[ >>> FAIL -> requeue: " + msg.id() + " <<< ]");
+            System.out.print("[ >>> FAIL -> REQUEUE: " + msg.id() + " <<< ]\n");
             brokerQueue.enqueue(msg);
         }
     }
 
     private void process(Message msg) {
-        System.out.print("[ >>> processing: " + msg + " <<< ]");
-        System.out.print("[ >>> processed successfully: " + msg.id() + " <<< ]");
+        System.out.print("[ >>> PROCESSING: " + msg + " <<< ]\n");
+        System.out.print("[ >>> PROCESSED SUCCESFULLY: " + msg.id() + " <<< ]\n");
     }
 }
