@@ -2,21 +2,26 @@ package io.github.ppp16bit.message_broker.consumer;
 
 import io.github.ppp16bit.message_broker.model.Message;
 import io.github.ppp16bit.message_broker.queue.BrokerQueue;
+import io.github.ppp16bit.message_broker.clj.ClojureBridge;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
 @Component
 public class QueueConsumer {
-    private final BrokerQueue brokerQueue;
 
-    public QueueConsumer(BrokerQueue brokerQueue) {
+    private final BrokerQueue brokerQueue;
+    private final ClojureBridge clojureBridge;
+
+    public QueueConsumer(BrokerQueue brokerQueue, ClojureBridge clojureBridge) {
         this.brokerQueue = brokerQueue;
+        this.clojureBridge = clojureBridge;
     }
 
     @PostConstruct
     public void start() {
-        System.out.print("[ >>> Queue consumer started <<< ]\n");
-        new Thread(() -> {
+        System.out.print("[ >>> QUEUE CONSUMER STARTED <<< ]\n");
+
+        Thread.ofVirtual().start(() -> {
             while (true) {
                 try {
                     Message msg = brokerQueue.deliver();
@@ -28,22 +33,18 @@ public class QueueConsumer {
                     e.printStackTrace();
                 }
             }
-        }, "broker-consumer-thread").start();
+        });
     }
 
     private void handle(Message msg) {
         try {
-            process(msg);
+            clojureBridge.process(msg);
             brokerQueue.ack(msg.id());
-            System.out.print("[ >>> ACK: " + msg.id() + " <<< ]\n");
-        } catch (Exception e) {
-            System.out.print("[ >>> FAIL -> REQUEUE: " + msg.id() + " <<< ]\n");
-            brokerQueue.enqueue(msg);
-        }
-    }
+            System.out.println("[ >>> ACK: " + msg.id() + " <<< ]\n");
 
-    private void process(Message msg) {
-        System.out.print("[ >>> PROCESSING: " + msg + " <<< ]\n");
-        System.out.print("[ >>> PROCESSED SUCCESFULLY: " + msg.id() + " <<< ]\n");
+        } catch (Exception e) {
+            System.out.println("[ >>> FAIL -> REQUEUE: " + msg.id() + " <<< ]\n");
+            brokerQueue.requeue(msg.id());
+        }
     }
 }
