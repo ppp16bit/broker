@@ -2,18 +2,18 @@ package io.github.ppp16bit.message_broker.service;
 
 import org.springframework.stereotype.Service;
 
-import io.github.ppp16bit.message_broker.exchange.DirectExchange;
 import io.github.ppp16bit.message_broker.model.Message;
+import io.github.ppp16bit.message_broker.queue.BrokerQueue;
 
 @Service
 public class ProducerService {
-    private final DirectExchange exchange;
+    private final BrokerQueue brokerQueue;
 
-    public ProducerService(DirectExchange exchange) {
-        this.exchange = exchange;
+    public ProducerService(BrokerQueue brokerQueue) {
+        this.brokerQueue = brokerQueue;
     }
 
     public void publish(Message message) {
-        exchange.route(message);
+        brokerQueue.enqueue(message);
     }
 }
