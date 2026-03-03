@@ -9,7 +9,7 @@
 
 (defn process [msg]
   (try
-    (.info logger (str "[ >>> RECEIVED: " msg + " <<< ]\n"))
+    (.info logger (str "[ >>> RECEIVED: " msg  " <<< ]"))
 
     (if-not (filters/valid? msg)
       (do
